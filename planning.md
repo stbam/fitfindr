@@ -15,36 +15,53 @@ You must have at least 3 tools. The three required tools are listed — add any 
 ### Tool 1: search_listings
 
 **What it does:**
-<!-- Describe what this tool does in 1–2 sentences -->
+search_listings function runs load_listings function in tools.py which {Returns:
+A list of listing dictionaries. Each listing has the following fields: - id (str) - title (str) - description (str) - category (str): one of tops, bottoms, outerwear, shoes, accessories - style_tags (list[str]) - size (str) - condition (str): excellent, good, or fair - price (float) - colors (list[str]) - brand (str or None) - platform (str): depop, thredUp, or poshmark
+}
+within search_listings function to
+search listings.json for items matching description,size and max price. It returns a list of matching list dictionaries sorted
+by best match first and returns empty array if nothing is found.
 
 **Input parameters:**
-<!-- List each parameter, its type, and what it represents -->
-- `description` (str): ...
-- `size` (str): ...
-- `max_price` (float): ...
+
+- `description` (str): Keywords describing what the user is looking for
+- `size` (str): Size string to filter by, or None to skip size filtering.
+  Matching is case-insensitive (e.g., "M" matches "S/M").
+- `max_price` (float): Maximum price (inclusive), or None to skip price filtering.
 
 **What it returns:**
-<!-- Describe the return value — what fields does a result contain? -->
+A list of matching listing dicts, sorted by relevance (best match first).
+Returns an empty list if nothing matches — does NOT raise an exception.
 
 **What happens if it fails or returns nothing:**
-<!-- What should the agent do if no listings match? -->
+If it returns nothing it should suggest a few options and stop.
 
 ---
 
 ### Tool 2: suggest_outfit
 
 **What it does:**
+
 <!-- Describe what this tool does in 1–2 sentences -->
 
+run_agent calls suggest_outfit which suggests 1-2 complete outfits based off of new_item and wardrobe parameters.it uses load_wardrobe_schema which when called returns {
+A dictionary containing: - schema: the field definitions for a wardrobe item - example_wardrobe: a sample wardrobe with 10 items - empty_wardrobe: a starting template for a new user}
+
+the suggest_outfit at the end of execution should return A non-empty string with outfit suggestions.If the wardrobe is empty, offer general styling advice for the item rather than raising an exception or returning an empty string.
+
 **Input parameters:**
+
 <!-- List each parameter, its type, and what it represents -->
+
 - `new_item` (dict): ...
 - `wardrobe` (dict): ...
 
 **What it returns:**
+
 <!-- Describe the return value -->
 
 **What happens if it fails or returns nothing:**
+
 <!-- What should the agent do if the wardrobe is empty or no outfit can be suggested? -->
 
 ---
@@ -52,17 +69,22 @@ You must have at least 3 tools. The three required tools are listed — add any 
 ### Tool 3: create_fit_card
 
 **What it does:**
+
 <!-- Describe what this tool does in 1–2 sentences -->
 
 **Input parameters:**
+
 <!-- List each parameter, its type, and what it represents -->
+
 - `outfit` (str): ...
 - `new_item` (dict): ...
 
 **What it returns:**
+
 <!-- Describe the return value -->
 
 **What happens if it fails or returns nothing:**
+
 <!-- What should the agent do if the outfit data is incomplete? -->
 
 ---
@@ -76,6 +98,7 @@ You must have at least 3 tools. The three required tools are listed — add any 
 ## Planning Loop
 
 **How does your agent decide which tool to call next?**
+
 <!-- Describe the logic your planning loop uses. What does it look at? What conditions change its behavior? How does it know when it's done? -->
 
 ---
@@ -83,6 +106,7 @@ You must have at least 3 tools. The three required tools are listed — add any 
 ## State Management
 
 **How does information from one tool get passed to the next?**
+
 <!-- Describe how your agent stores and accesses state within a session. What data is tracked? How is it passed between tool calls? -->
 
 ---
@@ -91,11 +115,11 @@ You must have at least 3 tools. The three required tools are listed — add any 
 
 For each tool, describe the specific failure mode you're handling and what the agent does in response.
 
-| Tool | Failure mode | Agent response |
-|------|-------------|----------------|
-| search_listings | No results match the query | |
-| suggest_outfit | Wardrobe is empty | |
-| create_fit_card | Outfit input is missing or incomplete | |
+| Tool            | Failure mode                          | Agent response |
+| --------------- | ------------------------------------- | -------------- |
+| search_listings | No results match the query            |                |
+| suggest_outfit  | Wardrobe is empty                     |                |
+| create_fit_card | Outfit input is missing or incomplete |                |
 
 ---
 
@@ -111,6 +135,31 @@ For each tool, describe the specific failure mode you're handling and what the a
      an embedded image or screenshot cannot be evaluated.
      You'll share this diagram with an AI tool when asking it to implement
      the planning loop and each individual tool. -->
+
+     User query
+    │
+    ▼
+
+Planning Loop ───────────────────────────────────────────┐
+│ │
+├─► search_listings(description, size, max_price) │
+│ │ results=[] │
+│ ├──► [ERROR] "No listings found..." → return │
+│ │ │
+│ │ results=[item, ...] │
+│ ▼ │
+│ Session: selected_item = results[0] │
+│ │ │
+├─► suggest_outfit(selected_item, wardrobe) │
+│ │ │
+│ Session: outfit_suggestion = "..." │
+│ │ │
+└─► create_fit_card(outfit_suggestion, selected_item)│
+│ │
+Session: fit_card = "..." │
+│ └─ error path returns here
+▼
+Return session
 
 ---
 
@@ -140,13 +189,22 @@ Write out what a full user interaction looks like from start to finish — tool 
 **Example user query:** "I'm looking for a vintage graphic tee under $30. I mostly wear baggy jeans and chunky sneakers. What's out there and how would I style it?"
 
 **Step 1:**
+
 <!-- What does the agent do first? Which tool is called? With what input? -->
 
+first the agent receive message/message history from ui input. Handle query is then called from ui, withing handle query run_agent
+is called.
+
 **Step 2:**
+
 <!-- What happens next? What was returned from step 1? What tool is called now? -->
 
+wardrobe is selected from wardrobe_choice and run_agent is called passing wardrobe_choice into the file agent.py run_agent function
+
 **Step 3:**
+
 <!-- Continue until the full interaction is complete -->
 
 **Final output to user:**
+
 <!-- What does the user actually see at the end? -->

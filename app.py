@@ -23,28 +23,48 @@ from utils.data_loader import get_example_wardrobe, get_empty_wardrobe
 def handle_query(user_query: str, wardrobe_choice: str) -> tuple[str, str, str]:
     """
     Called by Gradio when the user submits a query.
-
-    Args:
-        user_query:     The text the user typed into the search box.
-        wardrobe_choice: Either "Example wardrobe" or "Empty wardrobe (new user)".
-
-    Returns:
-        A tuple of three strings:
-            (listing_text, outfit_suggestion, fit_card)
-        Each string maps to one of the three output panels in the UI.
-
-    TODO:
-        1. Guard against an empty query (return early with an error message).
-        2. Select the wardrobe based on wardrobe_choice.
-        3. Call run_agent() with the query and selected wardrobe.
-        4. If session["error"] is set, return the error in the first panel
-           and empty strings for the other two.
-        5. Otherwise, format session["selected_item"] into a readable listing_text
-           string and return it along with session["outfit_suggestion"] and
-           session["fit_card"].
     """
-    # TODO: implement this function
-    return "Agent not yet implemented.", "", ""
+    # Step 1: Guard against empty query
+    if not user_query or not user_query.strip():
+        return "Please enter a search query to get started.", "", ""
+
+    # Step 2: Select wardrobe
+    wardrobe = (
+        get_example_wardrobe()
+        if wardrobe_choice == "Example wardrobe"
+        else get_empty_wardrobe()
+    )
+
+    # Step 3: Run the agent
+    session = run_agent(query=user_query.strip(), wardrobe=wardrobe)
+
+    # Step 4: Handle early-termination errors
+    if session["error"]:
+        return session["error"], "", ""
+
+    # Step 5: Format the selected listing into readable text
+    item = session["selected_item"]
+    # Filter None values that may appear in list fields from the JSON data
+    style_tags = ", ".join(t for t in item.get("style_tags", []) if t is not None) or "—"
+    colors = ", ".join(c for c in item.get("colors", []) if c is not None) or "—"
+    results_count = len(session["search_results"])
+
+    listing_text = (
+        f"📦 {item.get('title', 'Unknown item')}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"💰 Price:      ${item.get('price', 0):.2f}\n"
+        f"🏷️  Brand:      {item.get('brand', '—')}\n"
+        f"📐 Size:       {item.get('size', '—')}\n"
+        f"✅ Condition:  {item.get('condition', '—')}\n"
+        f"🎨 Colors:     {colors}\n"
+        f"🔖 Style tags: {style_tags}\n"
+        f"🛒 Platform:   {item.get('platform', '—')}\n"
+        f"━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        f"📝 {item.get('description', '')}\n"
+        f"\n({results_count} listing{'s' if results_count != 1 else ''} matched your search)"
+    )
+
+    return listing_text, session["outfit_suggestion"], session["fit_card"]
 
 
 # ── interface ─────────────────────────────────────────────────────────────────
