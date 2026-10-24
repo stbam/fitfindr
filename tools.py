@@ -129,7 +129,10 @@ def search_listings(
     scored = [(score(item), item) for item in candidates]
  
     # Step 3: Drop zero-score items and sort best-first
-    results = [item for s, item in sorted(scored, key=lambda x: x[0], reverse=True) if s > 0]
+    #results = [item for s, item in sorted(scored, key=lambda x: x[0], reverse=True) if s > 0]
+        # Step 3: Keep items matching at least half the keywords, sorted best-first
+    min_score = max(1, (len(keywords) + 1) // 2)
+    results = [item for s, item in sorted(scored, key=lambda x: x[0], reverse=True) if s >= min_score]
  
     return results
 
