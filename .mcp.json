@@ -1,9 +1,8 @@
 {
   "mcpServers": {
     "fitfindr": {
-      "command": "/Users/stanislav/webdev/codepath/ai201-project2-fitfindr-starter/.venv/bin/python",
-      "args": ["/Users/stanislav/webdev/codepath/ai201-project2-fitfindr-starter/fitfindr_mcp.py"],
-      "cwd": "/Users/stanislav/webdev/codepath/ai201-project2-fitfindr-starter"
+      "command": ".venv/bin/python",
+      "args": ["fitfindr_mcp.py"]
     }
   }
 }

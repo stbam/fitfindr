@@ -211,6 +211,7 @@ def suggest_outfit(new_item: dict, wardrobe: dict) -> str:
                 f"Suggest 1–2 specific outfits using the new item combined with pieces from their wardrobe. "
                 f"Name the actual wardrobe pieces. Include styling tips (tuck, layer, roll sleeves, etc.) "
                 f"and mention the overall vibe. Sound like a fashion-forward friend, not a product catalog."
+                
             )
  
         return _call_llm(prompt, temperature=0.7)

@@ -1,20 +1,5 @@
 # FitFindr — Starter Kit
 
-This starter kit contains everything you need to begin Project 2.
-
-## What's Included
-
-```
-ai201-project2-fitfindr-starter/
-├── data/
-│   ├── listings.json          # 40 mock secondhand listings
-│   └── wardrobe_schema.json   # Wardrobe format + example wardrobe
-├── utils/
-│   └── data_loader.py         # Helper functions for loading the data
-├── planning.md                # Your planning template — fill this out first
-└── requirements.txt           # Python dependencies
-```
-
 ## Setup
 
 **macOS / Linux:**
@@ -33,10 +18,8 @@ source .venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
-Set your Groq API key in a `.env` file (get a free key at [console.groq.com](https://console.groq.com)):
-
 ```
-GROQ_API_KEY=your_key_here
+GEMINI_API_KEY=your_key_here {root of the folder}
 ```
 
 ## The Mock Listings Dataset
@@ -66,3 +49,48 @@ Load an example wardrobe with:
 from utils.data_loader import get_example_wardrobe
 wardrobe = get_example_wardrobe()
 ```
+
+## Use as an MCP server
+
+FitFindr's tools are also exposed as an MCP server (`fitfindr_mcp.py`), so an AI client like Claude can decide which tools to call and in what order.
+
+1. Clone the repo, create a venv, and install dependencies:
+
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+2. Create a `.env` file in the project root with your own Gemini key:
+
+   ```
+   GEMINI_API_KEY=your_key_here
+   ```
+
+3. Connect a client:
+   - **Claude Code:** open the project folder. It picks up `.mcp.json` automatically.
+   - **Claude Desktop:** add this to its config file, replacing `/path/to/fitfindr` with the full path to your clone:
+
+     ```json
+     {
+       "mcpServers": {
+         "fitfindr": {
+           "command": "/path/to/fitfindr/.venv/bin/python",
+           "args": ["/path/to/fitfindr/fitfindr_mcp.py"]
+         }
+       }
+     }
+     ```
+
+4. Try a prompt like:
+
+   > Find me a vintage graphic tee under $30 and style it with my wardrobe.
+
+### Tools
+
+| Tool           | Inputs                                                                        | Returns                                     |
+| -------------- | ----------------------------------------------------------------------------- | ------------------------------------------- |
+| `search`       | `description`, `size` (optional), `max_price` (optional), `limit` (default 5) | List of matching listings, best match first |
+| `outfit_ideas` | `listing`, `use_wardrobe` (default `true`)                                    | 1–2 outfit suggestions as text              |
+| `fit_card`     | `outfit`, `listing`                                                           | A short social-media caption                |
